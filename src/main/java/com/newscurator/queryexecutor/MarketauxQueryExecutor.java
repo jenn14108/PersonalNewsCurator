@@ -27,11 +27,6 @@ public class MarketauxQueryExecutor implements Callable<MarketauxResult[]> {
     private static final Logger logger = LoggerFactory.getLogger(MarketauxQueryExecutor.class);
     private static final String KEY = EnvironmentVariableKeeper.getInstance().getVariable(MARKETAUX_API_KEY);
 
-    public static void main(String[] args) {
-        MarketauxQueryExecutor marketauxQueryExecutor = new MarketauxQueryExecutor();
-        System.out.println(marketauxQueryExecutor.call());
-    }
-
     @Override
     public MarketauxResult[] call() {
         // create a new client
@@ -57,7 +52,6 @@ public class MarketauxQueryExecutor implements Callable<MarketauxResult[]> {
             JsonArray responseJson = jsonObject.get(DATA).getAsJsonArray();
             marketauxResults = new MarketauxResult[responseJson.size()];
             for (int index = 0; index < responseJson.size(); index++) {
-                System.out.println(responseJson.get(index));
                 marketauxResults[index] = gson.fromJson(responseJson.get(index).toString(), MarketauxResult.class);
             }
         } catch (IOException e) {

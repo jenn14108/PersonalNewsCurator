@@ -26,12 +26,6 @@ public class TheGuardianQueryExecutor implements Callable<TheGuardianResult[]> {
 
     private static final Logger logger = LoggerFactory.getLogger(TheGuardianQueryExecutor.class);
     private static final String KEY = EnvironmentVariableKeeper.getInstance().getVariable(THE_GUARDIAN_API_KEY);
-    
-    // temporary, for testing
-    public static void main(String[] args){
-        TheGuardianQueryExecutor theGuardianQueryExecutor = new TheGuardianQueryExecutor();
-        System.out.println(theGuardianQueryExecutor.call());
-    }
 
     @Override
     public TheGuardianResult[] call() {
@@ -61,9 +55,6 @@ public class TheGuardianQueryExecutor implements Callable<TheGuardianResult[]> {
             JsonObject responseJson = jsonObject.get(RESPONSE).getAsJsonObject();
             String results = responseJson.get(RESULTS).toString();
             theGuardianResults = gson.fromJson(results, TheGuardianResult[].class);
-            for (int i = 0; i < theGuardianResults.length; i++){
-                System.out.println(theGuardianResults[i]);
-            }
         } catch (IOException e) {
             logger.error("A problem occurred when sending a request against the Guardian API.", e);
         }

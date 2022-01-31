@@ -1,12 +1,18 @@
 package com.newscurator.app;
 
 
+import com.newscurator.queryexecutor.MarketauxQueryExecutor;
+import com.newscurator.queryexecutor.TheGuardianQueryExecutor;
+import com.newscurator.schema.MarketauxResult;
+import com.newscurator.schema.News;
+import com.newscurator.schema.TheGuardianResult;
+
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 import static com.newscurator.util.Constants.NY_ZONE_ID;
 
@@ -14,11 +20,18 @@ public class NewCuratorApplication {
 
     public static void main(String[] args) {
 
+        MarketauxQueryExecutor marketauxQueryExecutor = new MarketauxQueryExecutor();
+        TheGuardianQueryExecutor theGuardianQueryExecutor = new TheGuardianQueryExecutor();
+
         long delay = calculateTaskDelay();
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
         // keep app running until I take it down...
         // 86400 = 24 hrs in seconds
-        executor.scheduleWithFixedDelay(new TestTask(), delay, 86400, TimeUnit.SECONDS);
+
+        executor.scheduleAtFixedRate(() -> {
+                    runQueries(marketauxQueryExecutor, theGuardianQueryExecutor);
+                }
+                , delay, 86400, TimeUnit.SECONDS);
     }
 
     public static long calculateTaskDelay() {
@@ -33,11 +46,29 @@ public class NewCuratorApplication {
         return duration.getSeconds();
     }
 
-    public static class TestTask implements Runnable {
+    public static void runQueries(MarketauxQueryExecutor marketauxQueryExecutor, TheGuardianQueryExecutor theGuardianQueryExecutor) {
 
-        @Override
-        public void run() {
-            System.out.println("executed!");
-        }
+        MarketauxResult[] marketauxResults = marketauxQueryExecutor.call();
+        TheGuardianResult[] theGuardianResults = theGuardianQueryExecutor.call();
+        List<News> news = convertToNews(marketauxResults, theGuardianResults);
+        System.out.println(news);
     }
+
+    private static List<News> convertToNews(MarketauxResult[] marketauxResults, TheGuardianResult[] theGuardianResults){
+        List<News> news = new ArrayList<>();
+
+        for (MarketauxResult result : marketauxResults){
+            String title = result.getTitle();
+            String url = result.getUrl();
+            news.add(News.builder().newsTitle(title).newsUrl(url).build());
+        }
+
+        for (TheGuardianResult result : theGuardianResults){
+            String title = result.getWebTitle();
+            String url = result.getWebUrl();
+            news.add(News.builder().newsTitle(title).newsUrl(url).build());
+        }
+        return news;
+    }
+
 }
