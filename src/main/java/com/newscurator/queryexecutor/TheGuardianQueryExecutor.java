@@ -4,6 +4,7 @@ import com.newscurator.app.EnvironmentVariableKeeper;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -15,7 +16,7 @@ import java.io.IOException;
 @Slf4j
 public class TheGuardianQueryExecutor implements Runnable {
 
-    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(TheGuardianQueryExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(TheGuardianQueryExecutor.class);
     private static final String THE_GUARDIAN_API_KEY = "THE_GUARDIAN_API_KEY";
     private static final String API_KEY = "api-key";
     private static final String KEY = EnvironmentVariableKeeper.getInstance().getVariable(THE_GUARDIAN_API_KEY);
