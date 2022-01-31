@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.concurrent.Callable;
 
 /**
  * This is the query executor created for querying against the new API provided by The Guardian.
@@ -21,21 +22,19 @@ import java.time.ZoneId;
  * The Guardian API documentation - https://open-platform.theguardian.com/documentation/search
  */
 @Slf4j
-public class TheGuardianQueryExecutor implements Runnable {
+public class TheGuardianQueryExecutor implements Callable<TheGuardianResult[]> {
 
     private static final Logger logger = LoggerFactory.getLogger(TheGuardianQueryExecutor.class);
     private static final String KEY = EnvironmentVariableKeeper.getInstance().getVariable(THE_GUARDIAN_API_KEY);
-
-    TheGuardianResult[] theGuardianResults;
-
+    
     // temporary, for testing
     public static void main(String[] args){
         TheGuardianQueryExecutor theGuardianQueryExecutor = new TheGuardianQueryExecutor();
-        theGuardianQueryExecutor.run();
+        System.out.println(theGuardianQueryExecutor.call());
     }
 
     @Override
-    public void run() {
+    public TheGuardianResult[] call() {
 
         // create a new client
         OkHttpClient client = new OkHttpClient();
@@ -52,6 +51,7 @@ public class TheGuardianQueryExecutor implements Runnable {
         Request request = new Request.Builder().url(url).build();
         Call call = client.newCall(request);
         Response response;
+        TheGuardianResult[] theGuardianResults = new TheGuardianResult[0];
 
         try {
             // get response and convert to POJO
@@ -67,5 +67,7 @@ public class TheGuardianQueryExecutor implements Runnable {
         } catch (IOException e) {
             logger.error("A problem occurred when sending a request against the Guardian API.", e);
         }
+        
+        return theGuardianResults;
     }
 }

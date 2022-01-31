@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.concurrent.Callable;
 
 /**
  * This is the query executor created for querying against the new API provided by Marketaux.
@@ -21,20 +22,18 @@ import java.time.ZoneId;
  * API documentation: https://www.marketaux.com/documentation
  */
 @Slf4j
-public class MarketauxQueryExecutor implements Runnable {
+public class MarketauxQueryExecutor implements Callable<MarketauxResult[]> {
 
     private static final Logger logger = LoggerFactory.getLogger(MarketauxQueryExecutor.class);
     private static final String KEY = EnvironmentVariableKeeper.getInstance().getVariable(MARKETAUX_API_KEY);
 
-    MarketauxResult[] marketauxResults;
-
-    public static void main(String[] args){
+    public static void main(String[] args) {
         MarketauxQueryExecutor marketauxQueryExecutor = new MarketauxQueryExecutor();
-        marketauxQueryExecutor.run();
+        System.out.println(marketauxQueryExecutor.call());
     }
-    @Override
-    public void run() {
 
+    @Override
+    public MarketauxResult[] call() {
         // create a new client
         OkHttpClient client = new OkHttpClient();
 
@@ -49,6 +48,7 @@ public class MarketauxQueryExecutor implements Runnable {
         Request request = new Request.Builder().url(url).build();
         Call call = client.newCall(request);
         Response response;
+        MarketauxResult[] marketauxResults = new MarketauxResult[0];
 
         try {
             response = call.execute();
@@ -56,12 +56,14 @@ public class MarketauxQueryExecutor implements Runnable {
             JsonObject jsonObject = JsonParser.parseString(response.body().string()).getAsJsonObject();
             JsonArray responseJson = jsonObject.get(DATA).getAsJsonArray();
             marketauxResults = new MarketauxResult[responseJson.size()];
-            for (int index = 0; index < responseJson.size(); index++){
+            for (int index = 0; index < responseJson.size(); index++) {
                 System.out.println(responseJson.get(index));
                 marketauxResults[index] = gson.fromJson(responseJson.get(index).toString(), MarketauxResult.class);
             }
         } catch (IOException e) {
             logger.error("A problem occurred when sending a request against the Marketaux API.", e);
         }
+        
+        return marketauxResults;
     }
 }
