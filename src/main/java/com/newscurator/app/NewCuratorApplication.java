@@ -8,9 +8,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class NewCuratorApplication {
+import static com.newscurator.util.Constants.NY_ZONE_ID;
 
-    public static String NY_ZONE_ID = "America/New_York";
+public class NewCuratorApplication {
 
     public static void main(String[] args) {
 

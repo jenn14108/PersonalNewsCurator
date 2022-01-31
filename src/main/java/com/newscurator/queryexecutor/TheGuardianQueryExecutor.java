@@ -1,12 +1,19 @@
 package com.newscurator.queryexecutor;
 
+import static com.newscurator.util.Constants.NY_ZONE_ID;
+import static com.newscurator.util.TheGuardianConstants.*;
+
+import com.google.gson.*;
 import com.newscurator.app.EnvironmentVariableKeeper;
+import com.newscurator.schema.TheGuardianResult;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 /**
  * This is the query executor created for querying against the new API provided by The Guardian.
@@ -17,10 +24,9 @@ import java.io.IOException;
 public class TheGuardianQueryExecutor implements Runnable {
 
     private static final Logger logger = LoggerFactory.getLogger(TheGuardianQueryExecutor.class);
-    private static final String THE_GUARDIAN_API_KEY = "THE_GUARDIAN_API_KEY";
-    private static final String API_KEY = "api-key";
     private static final String KEY = EnvironmentVariableKeeper.getInstance().getVariable(THE_GUARDIAN_API_KEY);
-    private static final String BASE_URL = "https://content.guardianapis.com/search";
+
+    TheGuardianResult[] theGuardianResults;
 
     // temporary, for testing
     public static void main(String[] args){
@@ -37,19 +43,29 @@ public class TheGuardianQueryExecutor implements Runnable {
         // build the url
         HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL).newBuilder();
         urlBuilder.addQueryParameter(API_KEY, KEY);
+        urlBuilder.addQueryParameter(FROM_DATE, LocalDate.now(ZoneId.of(NY_ZONE_ID)).toString());
+        // q = query operator
+        urlBuilder.addQueryParameter(Q, TECHNOLOGY + "|" + TAIWAN + "|" + CHINA + "|" + POLITICS + "|" + BUSINESS);
         String url = urlBuilder.build().toString();
 
         // create & execute request
         Request request = new Request.Builder().url(url).build();
         Call call = client.newCall(request);
-        Response response = null;
+        Response response;
 
         try {
+            // get response and convert to POJO
             response = call.execute();
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            JsonObject jsonObject = JsonParser.parseString(response.body().string()).getAsJsonObject();
+            JsonObject responseJson = jsonObject.get(RESPONSE).getAsJsonObject();
+            String results = responseJson.get(RESULTS).toString();
+            theGuardianResults = gson.fromJson(results, TheGuardianResult[].class);
+            for (int i = 0; i < theGuardianResults.length; i++){
+                System.out.println(theGuardianResults[i]);
+            }
         } catch (IOException e) {
             logger.error("A problem occurred when sending a request against the Guardian API.", e);
         }
-        System.out.println(response);
-
     }
 }
