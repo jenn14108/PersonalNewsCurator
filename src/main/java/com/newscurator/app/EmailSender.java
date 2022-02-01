@@ -1,10 +1,14 @@
 package com.newscurator.app;
 
+import com.newscurator.queryexecutor.MarketauxQueryExecutor;
 import com.newscurator.schema.NewsArticle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
 
@@ -14,6 +18,7 @@ import static com.newscurator.util.Constants.GMAIL_USERNAME;
 
 public class EmailSender {
 
+    private static final Logger logger = LoggerFactory.getLogger(MarketauxQueryExecutor.class);
     private static final String USERNAME = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_USERNAME);
     private static final String PASSWORD = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_PASSWORD);
 
@@ -49,7 +54,7 @@ public class EmailSender {
 
             Transport.send(message);
 
-            // add logger
+            logger.info("Email sent successfully at " + LocalDateTime.now());
 
         } catch (MessagingException e) {
             e.printStackTrace();
