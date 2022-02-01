@@ -1,6 +1,5 @@
 package com.newscurator.app;
 
-import com.newscurator.queryexecutor.MarketauxQueryExecutor;
 import com.newscurator.schema.NewsArticle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,7 @@ import static com.newscurator.util.Constants.GMAIL_USERNAME;
 
 public class EmailSender {
 
-    private static final Logger logger = LoggerFactory.getLogger(MarketauxQueryExecutor.class);
+    private static final Logger logger = LoggerFactory.getLogger(EmailSender.class);
     private static final String USERNAME = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_USERNAME);
     private static final String PASSWORD = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_PASSWORD);
 
