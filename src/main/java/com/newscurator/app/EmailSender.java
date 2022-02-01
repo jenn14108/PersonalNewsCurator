@@ -1,8 +1,11 @@
 package com.newscurator.app;
 
+import com.newscurator.schema.NewsArticle;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.util.List;
 import java.util.Properties;
 
 import static com.newscurator.util.Constants.GMAIL_PASSWORD;
@@ -14,20 +17,17 @@ public class EmailSender {
     private static final String USERNAME = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_USERNAME);
     private static final String PASSWORD = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_PASSWORD);
 
-    public static void main(String[] args) {
+    private static final Properties properties = new Properties();
 
-        Properties prop = new Properties();
-        prop.put("mail.smtp.host", "smtp.gmail.com");
-        prop.put("mail.smtp.port", "587");
-        prop.put("mail.smtp.auth", "true");
-        prop.put("mail.smtp.starttls.enable", "true"); //TLS
+    static {
+        properties.put("mail.smtp.host", "smtp.gmail.com");
+        properties.put("mail.smtp.port", "587");
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", "true"); //TLS
+    }
 
-        Session session = Session.getInstance(prop,
-                new Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(USERNAME, PASSWORD);
-                    }
-                });
+    public void sendNewsCuratorEmail(List<NewsArticle> newsArticles) {
+        Session session = createSession();
 
         try {
             Message message = new MimeMessage(session);
@@ -36,15 +36,32 @@ public class EmailSender {
                     Message.RecipientType.TO,
                     InternetAddress.parse(USERNAME)
             );
+
+            // create message
             message.setSubject("Here's your curated news of the day!");
-            message.setText("Jk this is just for testing :)");
+            String body = "";
+            for (NewsArticle article: newsArticles){
+                String articleName = article.getTitle();
+                String url = article.getUrl();
+                body += "\u2022 " + articleName + ":\n" + url + "\n\n";
+            }
+            message.setText(body);
 
             Transport.send(message);
 
-            System.out.println("Email sent.");
+            // add logger
 
         } catch (MessagingException e) {
             e.printStackTrace();
         }
+    }
+
+    private Session createSession() {
+        return Session.getInstance(properties,
+                new Authenticator() {
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(USERNAME, PASSWORD);
+                    }
+                });
     }
 }

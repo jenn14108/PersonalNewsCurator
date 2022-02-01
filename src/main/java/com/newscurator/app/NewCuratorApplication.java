@@ -4,7 +4,7 @@ package com.newscurator.app;
 import com.newscurator.queryexecutor.MarketauxQueryExecutor;
 import com.newscurator.queryexecutor.TheGuardianQueryExecutor;
 import com.newscurator.schema.MarketauxResult;
-import com.newscurator.schema.News;
+import com.newscurator.schema.NewsArticle;
 import com.newscurator.schema.TheGuardianResult;
 
 import java.time.Duration;
@@ -18,6 +18,8 @@ import static com.newscurator.util.Constants.NY_ZONE_ID;
 
 public class NewCuratorApplication {
 
+    public static final EmailSender emailSender = new EmailSender();
+
     public static void main(String[] args) {
 
         MarketauxQueryExecutor marketauxQueryExecutor = new MarketauxQueryExecutor();
@@ -29,7 +31,7 @@ public class NewCuratorApplication {
         // 86400 = 24 hrs in seconds
 
         executor.scheduleAtFixedRate(() -> {
-                    runQueries(marketauxQueryExecutor, theGuardianQueryExecutor);
+                    runQueriesAndSendEmail(marketauxQueryExecutor, theGuardianQueryExecutor);
                 }
                 , delay, 86400, TimeUnit.SECONDS);
     }
@@ -46,29 +48,29 @@ public class NewCuratorApplication {
         return duration.getSeconds();
     }
 
-    public static void runQueries(MarketauxQueryExecutor marketauxQueryExecutor, TheGuardianQueryExecutor theGuardianQueryExecutor) {
+    public static void runQueriesAndSendEmail(MarketauxQueryExecutor marketauxQueryExecutor, TheGuardianQueryExecutor theGuardianQueryExecutor) {
 
         MarketauxResult[] marketauxResults = marketauxQueryExecutor.call();
         TheGuardianResult[] theGuardianResults = theGuardianQueryExecutor.call();
-        List<News> news = convertToNews(marketauxResults, theGuardianResults);
-        System.out.println(news);
+        List<NewsArticle> newsArticles = convertToNewsArticle(marketauxResults, theGuardianResults);
+        emailSender.sendNewsCuratorEmail(newsArticles);
     }
 
-    private static List<News> convertToNews(MarketauxResult[] marketauxResults, TheGuardianResult[] theGuardianResults){
-        List<News> news = new ArrayList<>();
+    private static List<NewsArticle> convertToNewsArticle(MarketauxResult[] marketauxResults, TheGuardianResult[] theGuardianResults){
+        List<NewsArticle> newsArticles = new ArrayList<>();
 
         for (MarketauxResult result : marketauxResults){
             String title = result.getTitle();
             String url = result.getUrl();
-            news.add(News.builder().newsTitle(title).newsUrl(url).build());
+            newsArticles.add(NewsArticle.builder().title(title).url(url).build());
         }
 
         for (TheGuardianResult result : theGuardianResults){
             String title = result.getWebTitle();
             String url = result.getWebUrl();
-            news.add(News.builder().newsTitle(title).newsUrl(url).build());
+            newsArticles.add(NewsArticle.builder().title(title).url(url).build());
         }
-        return news;
+        return newsArticles;
     }
 
 }
