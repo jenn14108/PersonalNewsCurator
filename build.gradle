@@ -24,3 +24,13 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+task stage(dependsOn: ['build', 'clean'])
+build.mustRunAfter clean
+
+task copyToLib(type: Copy) {
+    into "$buildDir/libs"
+    from(configurations.runtimeClasspath)
+}
+
+stage.dependsOn(copyToLib)
