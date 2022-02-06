@@ -1,15 +1,10 @@
 package com.newscurator.app;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 public class EnvironmentVariableKeeper {
 
     private static EnvironmentVariableKeeper instance;
 
-    private Dotenv dotenv;
-
     private EnvironmentVariableKeeper() {
-        dotenv = Dotenv.load();
     }
 
     public static EnvironmentVariableKeeper getInstance(){
@@ -20,6 +15,6 @@ public class EnvironmentVariableKeeper {
     }
 
     public String getVariable(String variableName){
-        return dotenv.get(variableName);
+        return System.getenv(variableName);
     }
 }

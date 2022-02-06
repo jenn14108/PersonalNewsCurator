@@ -6,10 +6,9 @@ import static com.newscurator.util.TheGuardianConstants.*;
 import com.google.gson.*;
 import com.newscurator.app.EnvironmentVariableKeeper;
 import com.newscurator.schema.TheGuardianResult;
-import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -21,15 +20,14 @@ import java.util.concurrent.Callable;
  * The http client used by this executor is okhttp - https://github.com/square/okhttp
  * The Guardian API documentation - https://open-platform.theguardian.com/documentation/search
  */
-@Slf4j
 public class TheGuardianQueryExecutor implements Callable<TheGuardianResult[]> {
 
-    private static final Logger logger = LoggerFactory.getLogger(TheGuardianQueryExecutor.class);
+    private static final Logger logger = LogManager.getLogger(TheGuardianQueryExecutor.class);
     private static final String KEY = EnvironmentVariableKeeper.getInstance().getVariable(THE_GUARDIAN_API_KEY);
 
     @Override
     public TheGuardianResult[] call() {
-
+        logger.info("Executing query against The Guardian...");
         // create a new client
         OkHttpClient client = new OkHttpClient();
 

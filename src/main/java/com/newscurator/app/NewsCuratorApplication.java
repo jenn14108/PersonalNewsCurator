@@ -14,13 +14,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import static com.newscurator.util.Constants.NY_ZONE_ID;
 
-public class NewCuratorApplication {
+public class NewsCuratorApplication {
+
+    private static final Logger logger = LogManager.getLogger(NewsCuratorApplication.class);
 
     public static final EmailSender emailSender = new EmailSender();
 
     public static void main(String[] args) {
+
+        logger.info("Application Started");
 
         MarketauxQueryExecutor marketauxQueryExecutor = new MarketauxQueryExecutor();
         TheGuardianQueryExecutor theGuardianQueryExecutor = new TheGuardianQueryExecutor();
@@ -39,8 +46,8 @@ public class NewCuratorApplication {
     public static long calculateTaskDelay() {
         // always execute queries at 1pm every day
         ZonedDateTime currentDateTime = ZonedDateTime.now(ZoneId.of(NY_ZONE_ID));
-        ZonedDateTime nextExecutionDateTime = currentDateTime.withHour(13).withMinute(0).withSecond(0);
-        // add one day if we are firing up application at a later time than 1pm EST
+        ZonedDateTime nextExecutionDateTime = currentDateTime.withHour(10).withMinute(0).withSecond(0);
+        // add one day if we are firing up application at a later time than 10am EST
         if (currentDateTime.compareTo(nextExecutionDateTime) > 0) {
             nextExecutionDateTime = nextExecutionDateTime.plusDays(1);
         }

@@ -1,12 +1,13 @@
 package com.newscurator.app;
 
 import com.newscurator.schema.NewsArticle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Properties;
@@ -17,7 +18,7 @@ import static com.newscurator.util.Constants.GMAIL_USERNAME;
 
 public class EmailSender {
 
-    private static final Logger logger = LoggerFactory.getLogger(EmailSender.class);
+    private static final Logger logger = LogManager.getLogger(EmailSender.class);
     private static final String USERNAME = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_USERNAME);
     private static final String PASSWORD = EnvironmentVariableKeeper.getInstance().getVariable(GMAIL_PASSWORD);
 
@@ -42,7 +43,7 @@ public class EmailSender {
             );
 
             // create message
-            message.setSubject("Here's your curated news of the day!");
+            message.setSubject("Here's your curated news of the day for " + LocalDate.now() + "!");
             String body = "";
             for (NewsArticle article: newsArticles){
                 String articleName = article.getTitle();
